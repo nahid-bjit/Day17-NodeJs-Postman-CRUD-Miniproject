@@ -588,17 +588,45 @@
     "title": " "
   },
   {
-    "id": 40,
+    "id": 41,
+    "title": "Shihab Pro 1",
+    "price": 129,
+    "rating": 4.99,
+    "stock": 100
+  },
+  {
+    "id": 42,
     "title": "Shihab Pro max",
     "price": 129,
     "rating": 4.99,
     "stock": 100
   },
   {
-    "id": 41,
-    "title": "Shihab Pro 1",
+    "id": 42,
+    "title": "Shihab Pro max 3",
     "price": 129,
     "rating": 4.99,
     "stock": 100
+  },
+  {
+    "id": 43,
+    "title": "Shihab Pro max 5",
+    "price": 129,
+    "rating": 4.99,
+    "stock": 100
+  },
+  {
+    "id": 44,
+    "title": "Shihab Pro max 6",
+    "price": 129,
+    "rating": 4.99,
+    "stock": 2
+  },
+  {
+    "id": 45,
+    "title": "Nahid Pro ",
+    "price": 129,
+    "rating": 4.99,
+    "stock": 1
   }
 ]

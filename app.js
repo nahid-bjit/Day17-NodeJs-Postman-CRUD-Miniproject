@@ -6,6 +6,7 @@
 const http = require("http");
 const { success, failure } = require("./util/common");
 const Product = require("./model/Product");
+const { insertInLog } = require("./log");
 
 const server = http.createServer(function (req, res) {
     // Parsing query parameters
@@ -39,10 +40,12 @@ const server = http.createServer(function (req, res) {
                 if (result.success) {
                     res.writeHead(200);
                     res.write(success("Successfully got all products", JSON.parse(result.data)));
+                    insertInLog("getAll");
                     return res.end();
                 } else {
                     res.writeHead(400);
                     res.write(failure("Failed to get products"));
+                    insertInLog();
                     return res.end();
                 }
             } catch (error) {
@@ -62,6 +65,7 @@ const server = http.createServer(function (req, res) {
                 if (result.success) {
                     res.writeHead(200);
                     res.write(success("Successfully got the product", result.data));
+                    insertInLog("getOne");
                     return res.end();
                 } else {
                     res.writeHead(404);
@@ -72,6 +76,7 @@ const server = http.createServer(function (req, res) {
                 console.error(error);
                 res.writeHead(500);
                 res.write(JSON.stringify({ message: "Internal server error" }));
+                insertInLog();
                 return res.end();
             }
         }
@@ -113,10 +118,65 @@ const server = http.createServer(function (req, res) {
                 if (result.success) {
                     res.writeHead(200);
                     res.write(result);
+                    insertInLog();
                     return res.end();
                 } else {
                     res.writeHead(400);
                     res.write(result);
+                    return res.end();
+                }
+            } catch (error) {
+                console.error(error);
+                res.writeHead(500);
+                res.write(JSON.stringify({ message: "Internal server error" }));
+                insertInLog();
+                return res.end();
+            }
+        }
+
+
+        else if (requestURL.startsWith("/products/delete/") && req.method === "DELETE") {
+            // Handling request to delete a product
+            const parts = requestURL.split("/");
+            const productId = parts[3]; // The ID is at index 3 in the URL
+            //console.log("delete: ", productId)
+
+            try {
+                const result = await Product.deleteProduct(productId);
+
+                if (result.success) {
+                    res.writeHead(200);
+                    res.write(result);
+                    insertInLog();
+                    return res.end();
+                } else {
+                    res.writeHead(400);
+                    res.write(result);
+                    return res.end();
+                }
+            } catch (error) {
+                console.error(error);
+                res.writeHead(500);
+                res.write(JSON.stringify({ message: "Internal server error" }));
+                insertInLog();
+                return res.end();
+            }
+        }
+
+        else if (requestURL === "/products/stockless10" && req.method === "GET") {
+            // Handling request for products with stock less than 10
+            console.log("stock less", requestURL)
+            try {
+                // console.log("stock less")
+                const result = await Product.getStockLessThan10();
+
+                if (result.success) {
+                    res.writeHead(200);
+                    res.write(success("Successfully got products with stock less than 10", result.data));
+                    return res.end();
+                } else {
+                    res.writeHead(400);
+                    res.write(failure(result.message));
                     return res.end();
                 }
             } catch (error) {

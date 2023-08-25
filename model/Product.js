@@ -3,6 +3,7 @@ const fs = require("fs");
 const fsPromise = require("fs").promises;
 const path = require("path");
 const { success, failure } = require("../util/common");
+const { insertInLog } = require("../log");
 
 class Product {
     async getAll() {
@@ -41,7 +42,7 @@ class Product {
 
     async add(product) {
         try {
-            console.log("Nahid: ", product);
+            //console.log("Nahid: ", product);
 
             if (!product.hasOwnProperty("title") || product.title.trim() === "") {
                 return failure("Title is required and cannot be empty");
@@ -72,6 +73,7 @@ class Product {
             };
 
             jsonData.push(newProduct);
+            insertInLog("objectAdded");
 
             await fsPromise.writeFile(
                 path.join(__dirname, "..", "data", "products.json"),
@@ -108,6 +110,8 @@ class Product {
                 ...jsonData[index],
                 ...updatedProduct
             };
+            insertInLog("updated");
+
 
             await fsPromise.writeFile(
                 path.join(__dirname, "..", "data", "products.json"),
@@ -123,52 +127,57 @@ class Product {
         }
     }
 
+    async deleteProduct(id) {
+        try {
+            const data = await fsPromise.readFile(
+                path.join(__dirname, "..", "data", "products.json"),
+                { encoding: "utf-8" }
+            );
+            const jsonData = JSON.parse(data);
 
+            const index = jsonData.findIndex(item => item.id === parseInt(id));
 
-    // async add(product) {
-    //     try {
-    //         const data = await fsPromise.readFile(
-    //             path.join(__dirname, "..", "data", "products.json"),
-    //             { encoding: "utf-8"}
-    //             ); // Read the file as a string
-    //         const newData = { ...product, id: data[data.length - 1].id + 1 }
-    //         data.push(newData);
+            if (index === -1) {
+                return failure("Product not found for deletion");
+            }
 
-    //         await fs.writeFile(path.join(__dirname, "..", "data", "products.json"), JSON.stringify(data, null, 2), 'utf-8'); // Write back the formatted JSON data
-    //         console.log("Product has been added successfully!!");
-    //         return true;
-    //     } catch (error) {
-    //         console.error("Error:", error);
-    //         return false;
-    //     }
-    // }
+            jsonData.splice(index, 1);
 
+            await fsPromise.writeFile(
+                path.join(__dirname, "..", "data", "products.json"),
+                JSON.stringify(jsonData, null, 2),
+                'utf-8'
+            );
 
+            console.log("Product has been deleted successfully!!");
+            return success("Product has been deleted successfully!!");
 
-    // async getOneId(id) {
-    //     // will implement it later
-    //     return fsPromise
-    //     .readFile(path.join(__dirname, "..", "data", "products.json"), {
-    //         encoding: "utf-8"})
-    //         .then(data)
-    //     })
+        } catch (error) {
+            console.error("Error:", error);
+            return failure("Failed to delete product", error);
+        }
+    }
 
-    // ## Get One By Id ## 
+    async getStockLessThan10() {
+        try {
+            const data = await fsPromise.readFile(
+                path.join(__dirname, "..", "data", "products.json"),
+                { encoding: "utf-8" }
+            );
+            const jsonData = JSON.parse(data);
 
-    //     async getOneById(id) {
-    //         return fsPromise
-    //         .readFile(path.join(__dirname, "..", "data", "products.json" ), {
-    //           encoding: "utf-8"})
-    //         .then((data) => {
-    //             const findData = JSON.parse(data).filter((element) => element.id) === Number(id)[0];
-    //             if (findData) {
+            const stockLessThan10 = jsonData.filter(item => item.stock < 10);
 
-    //             }
-    //         })
-    //     }
-
-    // }
-
+            if (stockLessThan10.length > 0) {
+                return { success: true, data: stockLessThan10 };
+            } else {
+                return failure("No products found with stock less than 10");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            return failure("Failed to retrieve products with stock less than 10", error);
+        }
+    }
 }
 
 module.exports = new Product();
